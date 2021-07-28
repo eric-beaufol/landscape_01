@@ -1,53 +1,87 @@
-import { ClampToEdgeWrapping, FrontSide, RepeatWrapping, sRGBEncoding } from 'three'
+import { FrontSide, RepeatWrapping } from 'three'
 import { useEffect, useState, useRef } from 'react'
-import { TextureLoader } from 'three'
-import { useHelper } from '@react-three/drei'
+import { useHelper, useTexture } from '@react-three/drei'
 // import { VertexNormalsHelper } from 'three/examples/jsm/helpers/VertexNormalsHelper'
 import Stone from './Stone'
+import styles from '../styles/Terrain.module.css'
 
 const Terrain = (props) => {
   const ref = useRef()
   const [stonePos, setStonePos] = useState()
+  let canvas, ctx
 
-  const loader = new TextureLoader()
-  const heightMap = loader.load('/img/heightmap.png')
-  const normalMap = loader.load('/img/normalmap.png')
-  const envMap = loader.load('/img/envmap.jpeg')
+  const heightMap = useTexture('/img/heightmap.png')
+  heightMap.wrapS = RepeatWrapping
+  heightMap.wrapT = RepeatWrapping
+  heightMap.anisotropy = 16
 
-  envMap.wrapS = RepeatWrapping
-  envMap.wrapT = RepeatWrapping
-  envMap.repeat.set(1, 1)
+  const normalMap = useTexture('/img/normalmap.png')
+  normalMap.wrapS = RepeatWrapping
+  normalMap.wrapT = RepeatWrapping
+  normalMap.anisotropy = 16
 
   useEffect(() => {
-    console.log(ref.current)
+    createHeightMapCanvas()
 
-    ref.current.geometry.computeVertexNormals()
-
-    const vertices = ref.current.geometry.attributes.position.array
-    const total = vertices.length / 3
-    const random = Math.floor(Math.random() * total)
-    const point = [-vertices[random * 3 + 1], vertices[random * 3 + 2], -vertices[random * 3]]
-
-    setStonePos(point)
-
-    console.log(vertices, total, point, random)
+    return () => {
+      canvas.removeEventListener('click', updateStonePosition)
+    }
   }, [])
 
-  // useEffect(() => {
-  //   ref.current.material.repeat.set(10)
-  //   console.log(ref.current)
-  // })
+  function updateStonePosition(e) {
+    const normalizeX = e.clientX / e.target.offsetWidth
+    const normalizeY = e.clientY / e.target.offsetHeight
 
-  // useHelper(ref, VertexNormalsHelper, 1, 'green')
+    const height = getHeightFromHeightMap(e.clientX, e.clientY)
+    updateHeightMapCanvas(e.clientX, e.clientY)
+
+    let row = Math.floor(41 * normalizeY)
+    let col = Math.round(41 * normalizeX)
+    const verticeIndex = 41 * row + col
+
+    console.log(height)
+
+    const vertices = ref.current.geometry.attributes.position.array
+    const point = [vertices[verticeIndex * 3], vertices[verticeIndex * 3 + 1], height]
+
+    setStonePos(point)
+  }
+
+  function createHeightMapCanvas() {
+    canvas = document.createElement('canvas')
+    canvas.width = 200
+    canvas.height = 200
+    ctx = canvas.getContext('2d')
+    ctx.drawImage(heightMap.image, 0, 0, canvas.width, canvas.height)
+
+    document.body.appendChild(canvas)
+    canvas.classList.add(styles.canvas)
+    canvas.addEventListener('click', updateStonePosition)
+  }
+
+  function updateHeightMapCanvas(x, y) {
+    ctx.drawImage(heightMap.image, 0, 0, canvas.width, canvas.height)
+    ctx.beginPath()
+    ctx.arc(x, y, 3, 0, 2 * Math.PI, false)
+    ctx.fillStyle = 'red'
+    ctx.fill()
+  }
+
+  function getHeightFromHeightMap(x, y) {
+    const pixelData = ctx.getImageData(x, y, 1, 1).data
+    console.log(pixelData)
+
+    return pixelData[0] / 255 * 100
+  }
 
   return (
-    <>
+    <group {...props}>
       {
         stonePos && (
           <Stone position={stonePos} />
         )
       }
-      <mesh {...props} ref={ref}>
+      <mesh ref={ref}>
         <planeGeometry args={[1024, 1024, 40, 40]} lookAt={[0, 1, 0]} />
         <meshStandardMaterial
           displacementMap={heightMap}
@@ -60,7 +94,7 @@ const Terrain = (props) => {
           roughness={.8}
         />
       </mesh>
-    </>
+    </group>
   )
 }
 

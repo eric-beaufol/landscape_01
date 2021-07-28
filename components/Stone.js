@@ -1,5 +1,4 @@
 const Stone = (props) => {
-  console.log('stone render')
   return (
     <mesh {...props}>
       <dodecahedronBufferGeometry args={[10, 0]}/>

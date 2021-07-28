@@ -12,7 +12,7 @@ function MyApp({ Component, pageProps }) {
   return (
     <Canvas 
       dpr={pixelRatio} 
-      camera={{ position: [0, 15, -40], near: 0.1, far: 5000 }}
+      camera={{ position: [0, 15, 40], near: 0.1, far: 5000 }}
       shadows={{ type: 'BasicShadowMap' }}>
       <Component {...pageProps} />
     </Canvas>

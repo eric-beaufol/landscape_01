@@ -40,12 +40,12 @@ export default function Home() {
       </DatGui> */}
       <ambientLight intensity={1.4} />
       <pointLight 
-        position={[0, 100, 2]} 
+        position={[0, -100, 2]} 
         intensity={0} 
         castShadow 
         ref={pointLightRef} />
       <directionalLight 
-        position={[0, 3, 100]} 
+        position={[0, 3, -100]} 
         intensity={2}
         castShadow 
         ref={directionalLightRef}
@@ -64,7 +64,7 @@ export default function Home() {
           receiveShadow
         />
       </Suspense>
-      <Sky sunPosition={[0, 3, 100]} inclination={0} azimuth={0.25} distance={45000} />
+      <Sky sunPosition={[0, 3, -100]} inclination={0} azimuth={0.25} distance={45000} />
       <OrbitControls />
     </>
   )
