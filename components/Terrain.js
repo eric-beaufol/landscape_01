@@ -1,4 +1,4 @@
-import { FrontSide, RepeatWrapping } from 'three'
+import { FrontSide, RepeatWrapping, CanvasTexture } from 'three'
 import { useEffect, useState, useRef } from 'react'
 import { useHelper, useTexture } from '@react-three/drei'
 // import { VertexNormalsHelper } from 'three/examples/jsm/helpers/VertexNormalsHelper'
@@ -6,27 +6,42 @@ import Stone from './Stone'
 import styles from '../styles/Terrain.module.css'
 
 const Terrain = (props) => {
+  let texture
   const ref = useRef()
+  const [heightMap, setHeightMap] = useState(useTexture('/img/heightmap.png'))
+  const [normalMap, setNormalMap] = useState(useTexture('/img/normalmap.png'))
   const [stonePos, setStonePos] = useState()
   let canvas, ctx
 
-  const heightMap = useTexture('/img/heightmap.png')
-  heightMap.wrapS = RepeatWrapping
-  heightMap.wrapT = RepeatWrapping
-  heightMap.anisotropy = 16
+  // const heightMap = useTexture('/img/heightmap.png')
+  // heightMap.wrapS = RepeatWrapping
+  // heightMap.wrapT = RepeatWrapping
+  // heightMap.anisotropy = 16
 
-  const normalMap = useTexture('/img/normalmap.png')
-  normalMap.wrapS = RepeatWrapping
-  normalMap.wrapT = RepeatWrapping
-  normalMap.anisotropy = 16
+  // const normalMap = useTexture('/img/normalmap.png')
+  // normalMap.wrapS = RepeatWrapping
+  // normalMap.wrapT = RepeatWrapping
+  // normalMap.anisotropy = 16
 
   useEffect(() => {
-    createHeightMapCanvas()
+    //createHeightMapCanvas()
+    if (props.noiseCanvas) {
+      setTimeout(applyCanvasTexture, 1000)
+    }
 
     return () => {
-      canvas.removeEventListener('click', updateStonePosition)
+      //canvas.removeEventListener('click', updateStonePosition)
     }
-  }, [])
+  }, [props.noiseCanvas])
+
+  function applyCanvasTexture() {
+    texture = new CanvasTexture(props.noiseCanvas.current)
+
+    ref.current.material.displacementMap = texture
+    ref.current.material.needsUpdate = true
+
+    requestAnimationFrame(applyCanvasTexture)
+  }
 
   function updateStonePosition(e) {
     const normalizeX = e.clientX / e.target.offsetWidth
@@ -75,26 +90,28 @@ const Terrain = (props) => {
   }
 
   return (
-    <group {...props}>
-      {
-        stonePos && (
-          <Stone position={stonePos} />
-        )
-      }
-      <mesh ref={ref}>
-        <planeGeometry args={[1024, 1024, 40, 40]} lookAt={[0, 1, 0]} />
-        <meshStandardMaterial
-          displacementMap={heightMap}
-          displacementScale={100}
-          normalMap={normalMap}
-          normalScale={.1}
-          side={FrontSide}
-          color={0x4477a9}
-          metalness={.1}
-          roughness={.8}
-        />
-      </mesh>
-    </group>
+    <>
+      <group {...props}>
+        {
+          stonePos && (
+            <Stone position={stonePos} />
+          )
+        }
+        <mesh ref={ref}>
+          <planeGeometry args={[1024, 1024, 40, 40]} lookAt={[0, 1, 0]} />
+          <meshStandardMaterial
+            displacementMap={heightMap}
+            displacementScale={100}
+            normalMap={normalMap}
+            normalScale={.1}
+            side={FrontSide}
+            color={0x4477a9}
+            metalness={.1}
+            roughness={.8}
+          />
+        </mesh>
+      </group>
+    </>
   )
 }
 

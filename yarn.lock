@@ -2944,6 +2944,11 @@ slice-ansi@^4.0.0:
     astral-regex "^2.0.0"
     is-fullwidth-code-point "^3.0.0"
 
+sobel-es6@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/sobel-es6/-/sobel-es6-0.0.3.tgz#3e275271556a75e26f2ca40b0250014cb0fd9ae8"
+  integrity sha1-PidScVVqdeJvLKQLAlABTLD9mug=
+
 source-map@0.7.3:
   version "0.7.3"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.7.3.tgz#5302f8169031735226544092e64981f751750383"
